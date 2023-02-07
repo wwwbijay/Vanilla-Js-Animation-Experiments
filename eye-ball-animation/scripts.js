@@ -23,7 +23,6 @@ class Eye{
         this.radius = radius;
     }
     draw(){
-
         //draw  eye
         ctx.beginPath();
         ctx.arc(this.x,this.y,this.radius, 0, Math.PI*2, true);
@@ -55,7 +54,7 @@ class Eye{
 
         let pupil_x = this.x + Math.cos(theta) * this.radius/1.9;
         let pupil_y = this.y + Math.sin(theta) * this.radius/1.9;
-        let pupil_radius = this.radius / 2.5;
+        let pupil_radius = this.radius / 3;
 
         ctx.beginPath();
         ctx.arc(pupil_x,pupil_y,pupil_radius, 0, Math.PI*2, true);
@@ -90,7 +89,7 @@ function init(){
         let eye = {
             x:Math.random() * canvas.width,
             y:Math.random() * canvas.height,
-            radius:Math.floor(Math.random() * 100) + 5
+            radius:Math.floor(Math.random() * 80) + 5
         }
         for(let i = 0; i < eyes.length; i++){    
             let previousEye = eyes[i];
@@ -98,7 +97,8 @@ function init(){
             let dy = eye.y - previousEye.y;
             overlapping=false;
             let distace = Math.sqrt(dx*dx + dy*dy);
-            if(distace < (eye.radius + previousEye.radius)){
+            // if(distace > (eye.radius + previousEye.radius)){
+            if(distace > (eye.radius + previousEye.radius)*3){
                 overlapping = true;
                 break;
             }           
@@ -106,7 +106,7 @@ function init(){
         if(!overlapping){
             eyes.push(new Eye(eye.x, eye.y, eye.radius));
         }
-
+        counter++;
     }
 
     
