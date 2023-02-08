@@ -3,8 +3,11 @@
     padding: 0;
     box-sizing: border-box;
 }
-#canvas1{
-    background: #476fc7;
+body{
+    background-image: linear-gradient(to top, #a18cd1 0%, #fbc2eb 100%);
+}
+#canvas1{    
+    background-image: linear-gradient(to top, #fad0c4 0%, #ffd1ff 100%);
     position: absolute;
     left: 50%;
     top: 50%;
