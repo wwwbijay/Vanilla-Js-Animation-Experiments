@@ -355,6 +355,55 @@ window.addEventListener("load", function () {
     }
   }
 
+  class Explosion {
+    constructor(game, x, y) {
+      this.game = game;
+      this.x = x;
+      this.y = y;
+      this.frameX = 0;
+      this.spriteHeight = 200;
+      this.fps = 22;
+      this.interval = 1000/this.fps;
+      this.timer = 0;
+      this.markedForDeletion = false;
+      this.maxFrame = 8;
+      this.spriteWidth = 200;
+      this.width = this.spriteWidth;
+      this.height = this.spriteHeight;
+      this.x = x- this.width *0.5;
+      this.y = y- this.height *0.5;
+    }
+    update(deltaTime){
+
+      if(this.timer > this.interval){
+        this.frameX++;
+        this.timer = 0;
+      }else{
+        this.timer += deltaTime;
+      }
+      
+      if(this.frameX > this.maxFrame) this.markedForDeletion = true;
+    }
+    draw(context){
+      context.drawImage(this.image, this.frameX * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight,  this.x, this.y, this.width, this.height);
+    }
+
+  }
+
+  class smokeExplosion extends Explosion{
+    constructor(game, x, y) {
+      super(game, x, y);
+      this.image = document.getElementById('smokeExplosion');
+    }
+  }
+
+  class fireExplosion extends Explosion{
+    constructor(game, x, y) {
+      super(game, x, y);
+      this.image = document.getElementById('fireExplosion');
+     }
+  }
+
   //handle score, timer, that needs to be displayed for user.
   class UI {
     constructor(game) {
@@ -436,13 +485,14 @@ window.addEventListener("load", function () {
       this.particles = [];
       this.enemies = [];
       this.keys = [];
+      this.explosions = [];
       this.ammo = 20;
       this.maxAmmo = 40;
       this.ammoTimer = 0;
       this.ammoInterval = 500;
       this.gameOver = false;
       this.score = 0;
-      this.winningScore = 20;
+      this.winningScore = 100;
       this.gameTime = 0;
       this.timeLimit = 5000000;
       this.speed = 1;
@@ -466,12 +516,19 @@ window.addEventListener("load", function () {
       //update particles;
       this.particles.forEach(particle=> particle.update());
       this.particles = this.particles.filter((particle) => !particle.markedForDeletion);
+
+      //update explosions;
+      this.explosions.forEach(explosion=> explosion.update(deltaTime));
+      this.explosions = this.explosions.filter((explosion) => !explosion.markedForDeletion);
       
       //update enemies;
       this.enemies.forEach((enemy) => {
         enemy.update();
         if (this.checkCollision(this.player, enemy)) {
           enemy.markedForDeletion = true;
+
+          this.addExplosion(enemy);
+
           for(let i=0; i<10; i++){
             this.particles.push(new Particle(this, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
           }
@@ -486,7 +543,8 @@ window.addEventListener("load", function () {
             this.particles.push(new Particle(this, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
             if (enemy.lives <= 0) {
               enemy.markedForDeletion = true;
-              
+              this.addExplosion(enemy);
+
               for(let i=0; i<10; i++){
                 this.particles.push(new Particle(this, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
               }
@@ -511,6 +569,7 @@ window.addEventListener("load", function () {
       this.background.draw(context);
       this.ui.draw(context);
       this.player.draw(context);
+      
       //draw all enemies
       this.enemies.forEach((enemy) => {
         enemy.draw(context);
@@ -518,6 +577,10 @@ window.addEventListener("load", function () {
       //draw all particles
       this.particles.forEach((particle) => {
         particle.draw(context);
+      });
+      //draw all explosions
+      this.explosions.forEach((explosion) => {
+        explosion.draw(context);
       });
       this.background.layer4.draw(context);
     }
@@ -527,6 +590,12 @@ window.addEventListener("load", function () {
       if (randomize < 0.4) this.enemies.push(new Angler1(this));
       else if (randomize < 0.8) this.enemies.push(new Angler2(this));
       else this.enemies.push(new LuckyFish(this));
+    }
+
+    addExplosion(enemy){
+      const randomize = Math.random();
+      if(randomize < 0.5) this.explosions.push(new smokeExplosion(this, enemy.x + enemy.width * 0.5, enemy.y+ enemy.height * 0.5 ));
+      else this.explosions.push(new fireExplosion(this, enemy.x + enemy.width * 0.5, enemy.y+ enemy.height * 0.5 ));
     }
 
     checkCollision(rect1, rect2) {
